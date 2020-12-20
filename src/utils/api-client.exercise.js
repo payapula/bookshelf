@@ -1,4 +1,20 @@
 function client(endpoint, customConfig = {}) {
+  const fullURL = `${process.env.REACT_APP_API_URL}/${endpoint}`
+
+  const config = {
+    method: 'GET',
+    mode: 'cors',
+    cache: 'no-cache',
+    ...customConfig,
+  }
+
+  return window.fetch(fullURL, config).then(response => {
+    if (!response.ok) {
+      throw new Error('Network response was not ok')
+    }
+    return response.json()
+  })
+
   // 🐨 create the config you'll pass to window.fetch
   //    make the method default to "GET"
   // 💰 if you're confused by this, that's fine. Scroll down to the bottom
