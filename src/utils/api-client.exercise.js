@@ -8,11 +8,13 @@ function client(endpoint, customConfig = {}) {
     ...customConfig,
   }
 
-  return window.fetch(fullURL, config).then(response => {
-    if (!response.ok) {
-      throw new Error('Network response was not ok')
+  return window.fetch(fullURL, config).then(async response => {
+    const data = await response.json()
+    if (response.ok) {
+      return data
+    } else {
+      return Promise.reject(data)
     }
-    return response.json()
   })
 
   // 🐨 create the config you'll pass to window.fetch
