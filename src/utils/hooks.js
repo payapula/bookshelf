@@ -1,4 +1,6 @@
 import * as React from 'react'
+import {useQuery, useMutation, queryCache} from 'react-query'
+import {client} from 'utils/api-client'
 
 function useSafeDispatch(dispatch) {
   const mounted = React.useRef(false)
@@ -81,4 +83,83 @@ function useAsync(initialState) {
   }
 }
 
-export {useAsync}
+// PLEASE SEE KENT's SOLUTION FOR EXTRA CREDIT - 1
+// I Placed all the hooks in same file
+function useBook(bookId, user) {
+  const {data} = useQuery({
+    queryKey: ['book', {bookId}],
+    queryFn: () =>
+      client(`books/${bookId}`, {token: user.token}).then(data => data.book),
+  })
+
+  return {data}
+}
+
+function useBookSearch(query, user) {
+  const {data, error, isLoading, isError, isSuccess} = useQuery({
+    queryKey: ['bookSearch', {query}],
+    queryFn: () =>
+      client(`books?query=${encodeURIComponent(query)}`, {
+        token: user.token,
+      }).then(data => data.books),
+  })
+
+  return {data, error, isLoading, isError, isSuccess}
+}
+
+function useListItems(user) {
+  const {data} = useQuery({
+    queryKey: 'list-items',
+    queryFn: () =>
+      client(`list-items`, {token: user.token}).then(data => {
+        return data.listItems
+      }),
+  })
+
+  return {data}
+}
+
+function useCreateListItem(user) {
+  const [create] = useMutation(
+    ({bookId}) => {
+      client('list-items', {data: {bookId}, token: user.token})
+    },
+    {onSettled: () => queryCache.invalidateQueries('list-items')},
+  )
+
+  return [create]
+}
+
+function useUpdateListItem(user) {
+  const [update] = useMutation(
+    updates => {
+      client(`list-items/${updates.id}`, {
+        data: updates,
+        token: user.token,
+        method: 'PUT',
+      })
+    },
+    {onSettled: () => queryCache.invalidateQueries('list-items')},
+  )
+  return [update]
+}
+
+function useRemoveListItem(user) {
+  const [remove] = useMutation(
+    ({id}) => {
+      client(`list-items/${id}`, {token: user.token, method: 'DELETE'})
+    },
+    {onSettled: () => queryCache.invalidateQueries('list-items')},
+  )
+  return [remove]
+}
+
+export {
+  useAsync,
+  useBook,
+  useBookSearch,
+  useListItems,
+  useCreateListItem,
+  useUpdateListItem,
+  useRemoveListItem,
+}

@@ -4,8 +4,7 @@ import {jsx} from '@emotion/core'
 import * as React from 'react'
 import Tooltip from '@reach/tooltip'
 import {FaSearch, FaTimes} from 'react-icons/fa'
-import {useQuery} from 'react-query'
-import {client} from 'utils/api-client'
+import {useBookSearch} from 'utils/hooks'
 import * as colors from 'styles/colors'
 import {BookRow} from 'components/book-row'
 import {BookListUL, Spinner, Input} from 'components/lib'
@@ -29,13 +28,10 @@ function DiscoverBooksScreen({user}) {
   const [query, setQuery] = React.useState('')
   const [queried, setQueried] = React.useState(false)
 
-  const {data, error, isLoading, isError, isSuccess} = useQuery({
-    queryKey: ['bookSearch', {query}],
-    queryFn: () =>
-      client(`books?query=${encodeURIComponent(query)}`, {
-        token: user.token,
-      }).then(data => data.books),
-  })
+  const {data, error, isLoading, isError, isSuccess} = useBookSearch(
+    query,
+    user,
+  )
 
   const books = data ?? loadingBooks
 

@@ -10,8 +10,12 @@ import {
   FaTimesCircle,
 } from 'react-icons/fa'
 import Tooltip from '@reach/tooltip'
-import {useQuery, useMutation, queryCache} from 'react-query'
-import {client} from 'utils/api-client'
+import {
+  useListItems,
+  useCreateListItem,
+  useUpdateListItem,
+  useRemoveListItem,
+} from 'utils/hooks'
 import {useAsync} from 'utils/hooks'
 import * as colors from 'styles/colors'
 import {CircleButton, Spinner} from './lib'
@@ -48,43 +52,18 @@ function TooltipButton({label, highlight, onClick, icon, ...rest}) {
 }
 
 function StatusButtons({user, book}) {
-  const {data} = useQuery({
-    queryKey: ['list-items'],
-    queryFn: () =>
-      client(`list-items`, {token: user.token}).then(data => {
-        return data.listItems
-      }),
-  })
+  const {data} = useListItems(user)
 
   const listItem =
     data?.find(userBook => {
       return userBook.bookId === book.id
     }) ?? null
 
-  const [create] = useMutation(
-    ({bookId}) => {
-      client('list-items', {data: {bookId}, token: user.token})
-    },
-    {onSettled: () => queryCache.invalidateQueries('list-items')},
-  )
+  const [create] = useCreateListItem(user)
 
-  const [update] = useMutation(
-    updates => {
-      client(`list-items/${updates.id}`, {
-        data: updates,
-        token: user.token,
-        method: 'PUT',
-      })
-    },
-    {onSettled: () => queryCache.invalidateQueries('list-items')},
-  )
+  const [update] = useUpdateListItem(user)
 
-  const [deleteBook] = useMutation(
-    ({id}) => {
-      client(`list-items/${id}`, {token: user.token, method: 'DELETE'})
-    },
-    {onSettled: () => queryCache.invalidateQueries('list-items')},
-  )
+  const [remove] = useRemoveListItem(user)
 
   return (
     <React.Fragment>
@@ -109,7 +88,7 @@ function StatusButtons({user, book}) {
         <TooltipButton
           label="Remove from list"
           highlight={colors.danger}
-          onClick={() => deleteBook({id: listItem.id})}
+          onClick={() => remove({id: listItem.id})}
           icon={<FaMinusCircle />}
         />
       ) : (
