@@ -7,37 +7,25 @@ import {FaRegCalendarAlt} from 'react-icons/fa'
 import Tooltip from '@reach/tooltip'
 import {useParams} from 'react-router-dom'
 // 🐨 you'll need these:
-import {useBook, useListItems, useUpdateListItem} from 'utils/hooks'
+import {useBook} from 'utils/books'
+import {useListItem, useUpdateListItem} from 'utils/list-items'
 import {formatDate} from 'utils/misc'
 import * as mq from 'styles/media-queries'
 import * as colors from 'styles/colors'
 import {Textarea} from 'components/lib'
 import {Rating} from 'components/rating'
 import {StatusButtons} from 'components/status-buttons'
-import bookPlaceholderSvg from 'assets/book-placeholder.svg'
-
-const loadingBook = {
-  title: 'Loading...',
-  author: 'loading...',
-  coverImageUrl: bookPlaceholderSvg,
-  publisher: 'Loading Publishing',
-  synopsis: 'Loading...',
-  loadingBook: true,
-}
+import {ErrorMessage, Spinner} from 'components/lib'
 
 function BookScreen({user}) {
   const {bookId} = useParams()
 
-  const {data: book = loadingBook} = useBook(bookId, user)
+  const book = useBook(bookId, user)
 
-  const {data: listItems} = useListItems(user)
+  const listItem = useListItem(user, bookId)
 
   const {title, author, coverImageUrl, publisher, synopsis} = book
 
-  const listItem =
-    listItems?.find(userBook => {
-      return userBook.bookId === book.id
-    }) ?? null
   return (
     <div>
       <div
@@ -118,23 +106,7 @@ function ListItemTimeframe({listItem}) {
 }
 
 function NotesTextarea({listItem, user}) {
-  // 🐨 call useMutation here
-  // the mutate function should call the list-items/:listItemId endpoint with a PUT
-  //   and the updates as data. The mutate function will be called with the updates
-  //   you can pass as data.
-  // 💰 if you want to get the list-items cache updated after this query finishes
-  // the use the `onSettled` config option to queryCache.invalidateQueries('list-items')
-  // 💣 DELETE THIS ESLINT IGNORE!! Don't ignore the exhaustive deps rule please
-
-  // const mutate = updates => {
-  //   client(`list-items/${updates.id}`, {
-  //     data: updates,
-  //     token: user.token,
-  //     method: 'PUT',
-  //   })
-  // }
-
-  const [update] = useUpdateListItem(user)
+  const [update, {error, isError, isLoading}] = useUpdateListItem(user)
 
   const debouncedMutate = React.useMemo(() => debounceFn(update, {wait: 300}), [
     update,
@@ -158,7 +130,16 @@ function NotesTextarea({listItem, user}) {
           }}
         >
           Notes
-        </label>
+        </label>{' '}
+        {isLoading ? (
+          <Spinner />
+        ) : isError ? (
+          <ErrorMessage
+            error={error}
+            variant="inline"
+            css={{marginLeft: 6, fontSize: '0.7em'}}
+          />
+        ) : null}
       </div>
       <Textarea
         id="notes"

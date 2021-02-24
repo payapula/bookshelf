@@ -1,7 +1,7 @@
 /** @jsx jsx */
 import {jsx} from '@emotion/core'
 
-import {useListItems} from 'utils/hooks'
+import {useListItems} from 'utils/list-items'
 import {BookListUL} from './lib'
 import {BookRow} from './book-row'
 
@@ -11,10 +11,7 @@ function ListItemList({
   noListItems,
   noFilteredListItems,
 }) {
-  const {data} = useListItems(user)
-
-  // 🐨 assign this to the list items you get back from react-query
-  const listItems = data
+  const listItems = useListItems(user)
 
   const filteredListItems = listItems?.filter(filterListItems)
 

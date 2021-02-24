@@ -11,20 +11,24 @@ import {
 } from 'react-icons/fa'
 import Tooltip from '@reach/tooltip'
 import {
-  useListItems,
+  useListItem,
   useCreateListItem,
   useUpdateListItem,
   useRemoveListItem,
-} from 'utils/hooks'
+} from 'utils/list-items'
 import {useAsync} from 'utils/hooks'
 import * as colors from 'styles/colors'
 import {CircleButton, Spinner} from './lib'
 
 function TooltipButton({label, highlight, onClick, icon, ...rest}) {
-  const {isLoading, isError, error, run} = useAsync()
+  const {isLoading, isError, error, run, reset} = useAsync()
 
   function handleClick() {
-    run(onClick())
+    if (isError) {
+      reset()
+    } else {
+      run(onClick())
+    }
   }
 
   return (
@@ -52,18 +56,13 @@ function TooltipButton({label, highlight, onClick, icon, ...rest}) {
 }
 
 function StatusButtons({user, book}) {
-  const {data} = useListItems(user)
+  const listItem = useListItem(user, book.id)
 
-  const listItem =
-    data?.find(userBook => {
-      return userBook.bookId === book.id
-    }) ?? null
+  const [create] = useCreateListItem(user, {throwOnError: true})
 
-  const [create] = useCreateListItem(user)
+  const [update] = useUpdateListItem(user, {throwOnError: true})
 
-  const [update] = useUpdateListItem(user)
-
-  const [remove] = useRemoveListItem(user)
+  const [remove] = useRemoveListItem(user, {throwOnError: true})
 
   return (
     <React.Fragment>
