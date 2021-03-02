@@ -7,6 +7,7 @@ import {Button, ErrorMessage, FullPageErrorFallback} from './components/lib'
 import * as mq from './styles/media-queries'
 import * as colors from './styles/colors'
 // 🐨 get AuthContext from ./context/auth-context
+import {useAuth} from './context/auth-context'
 import {ReadingListScreen} from './screens/reading-list'
 import {FinishedScreen} from './screens/finished'
 import {DiscoverBooksScreen} from './screens/discover'
@@ -28,10 +29,9 @@ function ErrorFallback({error}) {
   )
 }
 
-// you'll no longer receive the user object and logout function as props
-// 💣 remove the props
-function AuthenticatedApp({user, logout}) {
-  // 🐨 get user and logout function from AuthContext using useContext
+function AuthenticatedApp() {
+  const {user, logout} = useAuth()
+
   return (
     <ErrorBoundary FallbackComponent={FullPageErrorFallback}>
       <div
@@ -69,10 +69,7 @@ function AuthenticatedApp({user, logout}) {
         </div>
         <main css={{width: '100%'}}>
           <ErrorBoundary FallbackComponent={ErrorFallback}>
-            <AppRoutes
-              // 🐨 we no longer need to pass the user
-              user={user}
-            />
+            <AppRoutes />
           </ErrorBoundary>
         </main>
       </div>
@@ -150,16 +147,13 @@ function Nav() {
   )
 }
 
-// you'll no longer receive the user object and logout function as props
-// 💣 remove the user prop
-function AppRoutes({user}) {
+function AppRoutes() {
   return (
     <Routes>
-      {/* 💣 remove the user prop on all of these, they can get it from context */}
-      <Route path="/list" element={<ReadingListScreen user={user} />} />
-      <Route path="/finished" element={<FinishedScreen user={user} />} />
-      <Route path="/discover" element={<DiscoverBooksScreen user={user} />} />
-      <Route path="/book/:bookId" element={<BookScreen user={user} />} />
+      <Route path="/list" element={<ReadingListScreen />} />
+      <Route path="/finished" element={<FinishedScreen />} />
+      <Route path="/discover" element={<DiscoverBooksScreen />} />
+      <Route path="/book/:bookId" element={<BookScreen />} />
       <Route path="*" element={<NotFoundScreen />} />
     </Routes>
   )
