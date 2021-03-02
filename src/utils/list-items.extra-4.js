@@ -7,10 +7,12 @@ function useListItems() {
   const {data} = useQuery({
     queryKey: 'list-items',
     queryFn: () => client(`list-items`).then(data => data.listItems),
-    onSuccess: async listItems => {
-      for (const listItem of listItems) {
-        setQueryDataForBook(listItem.book)
-      }
+    config: {
+      onSuccess: async listItems => {
+        for (const listItem of listItems) {
+          setQueryDataForBook(listItem.book)
+        }
+      },
     },
   })
   return data ?? []
