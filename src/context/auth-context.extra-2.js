@@ -36,7 +36,8 @@ function AuthProvider(props) {
   } = useAsync()
 
   React.useEffect(() => {
-    run(getUser())
+    const userPromise = getUser()
+    run(userPromise)
   }, [run])
 
   const login = React.useCallback(
