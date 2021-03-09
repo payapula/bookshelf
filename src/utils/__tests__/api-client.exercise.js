@@ -4,22 +4,15 @@ import {server, rest} from 'test/server'
 // 🐨 grab the client
 import {client} from '../api-client'
 
+// Extra Credit - 2
+import {queryCache} from 'react-query'
+import * as auth from 'auth-provider'
+
 // 🐨 add a beforeAll to start the server with `server.listen()`
 // 🐨 add an afterAll to stop the server when `server.close()`
 // 🐨 afterEach test, reset the server handlers to their original handlers
 // via `server.resetHandlers()`
 
-beforeAll(() => {
-  server.listen()
-})
-
-afterAll(() => {
-  server.close()
-})
-
-afterEach(() => {
-  server.resetHandlers()
-})
 // 🐨 flesh these out:
 
 // test.todo('calls fetch at the endpoint with the arguments for GET requests')
@@ -85,4 +78,44 @@ test('when data is provided, it is stringified and the method defaults to POST',
   const result = await client('testwithtoken', {token: TOKEN, data})
   expect(result).toStrictEqual(data)
   expect(request.method).toStrictEqual('POST')
+})
+
+test('Failed test cases - 300', async () => {
+  const endpoint = 'testwithtoken'
+  const TOKEN = 'ab0234-a3'
+  server.use(
+    rest.post(`${apiUrl}/${endpoint}`, async (req, res, ctx) => {
+      return res(ctx.status(300), ctx.json({message: 'Failed Badly!'}))
+    }),
+  )
+  try {
+    const result = await client('testwithtoken', {
+      token: TOKEN,
+      data: {sample: 'data'},
+    })
+  } catch (error) {
+    expect(error.message).toBe('Failed Badly!')
+  }
+})
+
+jest.mock('react-query')
+jest.mock('auth-provider')
+
+test('Failed test cases - 401', async () => {
+  const endpoint = 'testwithtoken'
+  const TOKEN = 'ab0234-a3'
+  server.use(
+    rest.post(`${apiUrl}/${endpoint}`, async (req, res, ctx) => {
+      return res(ctx.status(401), ctx.json({message: 'Failed Badly!'}))
+    }),
+  )
+
+  const resolved = await client('testwithtoken', {
+    token: TOKEN,
+    data: {sample: 'data'},
+  }).catch(e => e)
+
+  expect(resolved.message).toMatchInlineSnapshot(`"Please re-authenticate."`)
+  expect(queryCache.clear).toHaveBeenCalledTimes(1)
+  expect(auth.logout).toHaveBeenCalledTimes(1)
 })
