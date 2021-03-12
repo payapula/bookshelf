@@ -1,5 +1,9 @@
 # Integration Testing
 
+## 📝 Your Notes
+
+Elaborate on your learnings here in `INSTRUCTIONS.md`
+
 ## Background
 
 Let's take a step back and pretend that testing doesn't exist. Imagine you're
@@ -334,6 +338,15 @@ for the user who's logged in so you should be good to rock and roll.
 Editing the note works just fine, but you do have to wait 300ms for the debounce
 feature. See if you can figure out how to use `jest.useFakeTimers()` and
 `jest.useRealTimers()` to speed that up (it takes fewer changes than you think).
+
+💰 Long after recording the videos, I discovered a critical issue that lead to
+some flaky tests when using fake timers and react-query together. After much
+agonizing pain, I finally figured out the solution to the problem and I've
+updated the codebase to handle this. I suggest for this extra credit you take a
+look at the `src/setupTests.extra-5.js` file and just copy/paste the `afterEach`
+at the end of that rather than subject yourself to the same pain I went through.
+Hopefully the code comments there help give you an idea of what's going on
+there.
 
 **Files:**
 
